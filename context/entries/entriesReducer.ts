@@ -1,10 +1,12 @@
 import { entriesState } from ".";
 import { Entry } from "../../interfaces";
 
-type EntriesType = { type: "[Entry] Add-Entry"; payload: Entry };
+type EntriesType =
+  | { type: "[Entry] Add-Entry"; payload: Entry }
+  | { type: "[Entry] Entry-Updated"; payload: Entry };
 
 export const entriesReducer = (
-  state: entriesState,
+  state : entriesState,
   action: EntriesType
 ): entriesState => {
   switch (action.type) {
@@ -14,11 +16,17 @@ export const entriesReducer = (
         entries: [...state.entries, action.payload],
       };
 
-    //     case "UI - Close Sidebar":
-    //       return {
-    //         ...state,
-    //         sidemenuOpen: false,
-    //       };
+        case "[Entry] Entry-Updated":
+          return {
+            ...state,
+            entries: state.entries.map(entry => {
+              if (entry._id === action.payload._id) {
+                entry.status      = action.payload.status;
+                entry.description = action.payload.description;
+              }
+              return entry;
+            })
+          };
 
     default:
       return state;

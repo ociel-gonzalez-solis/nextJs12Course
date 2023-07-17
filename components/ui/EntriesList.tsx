@@ -3,22 +3,28 @@ import { EntriesCard } from "./EntriesCard";
 import { EntryStatus } from "@/interfaces";
 import { FC, useContext, useMemo, DragEvent } from "react";
 import { EntriesContext } from "@/context/entries";
+import { UIContext } from "@/context/ui";
+
+import styles from "./EntriesList.module.css";
 
 interface Props {
   status: EntryStatus;
 }
 
 export const EntriesList: FC<Props> = ({ status }) => {
-  const { entries } = useContext(EntriesContext);
+  const { entries, updateEntry }    = useContext(EntriesContext);
+  const { isDragging, endDragging } = useContext(UIContext);
 
   const allowDrop = (e: DragEvent) => {
     e.preventDefault();
-    const id = e.dataTransfer.getData("text");
-    console.log("🚀 ~ file: EntriesList.tsx:17 ~ allowDrop ~ id:", id);
   };
 
   const onDropEntry = (e: DragEvent) => {
-    console.log("🚀 ~ file: EntriesList.tsx:15 ~ onDropEntry ~ e:", e);
+    const id           = e.dataTransfer.getData("text");
+    const entry        = entries.find(e => e._id === id)!;
+          entry.status = status;
+    updateEntry(entry);
+    endDragging();
   };
 
   const entriesByStatus = useMemo(
@@ -27,7 +33,11 @@ export const EntriesList: FC<Props> = ({ status }) => {
   );
 
   return (
-    <div onDrop={onDropEntry} onDragOver={allowDrop}>
+    <div
+      onDrop={onDropEntry}
+      onDragOver={allowDrop}
+      className={isDragging ? styles.dragging : ""}
+    >
       <Paper
         sx={{
           height: "calc(100vh - 250px)",
@@ -38,7 +48,7 @@ export const EntriesList: FC<Props> = ({ status }) => {
         }}
       >
         <>
-          <List sx={{ opacity: 1 }}>
+          <List sx={{ opacity: isDragging ? 0.2 : 1, transition: "all 0.3s" }}>
             {entriesByStatus.map((entry, key) => (
               <EntriesCard key={entry._id} myKey={key} entry={entry} />
             ))}

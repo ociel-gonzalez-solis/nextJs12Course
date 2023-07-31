@@ -4,6 +4,7 @@ import { Layout } from "../components/layouts";
 import { EntriesList, NewEntry } from "@/components/ui";
 
 const Home: NextPage = () => {
+
   return (
     <Layout title="Open Jira">
       <Grid container spacing={2}>

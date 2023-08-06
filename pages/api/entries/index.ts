@@ -5,7 +5,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data =
   | { message: string }
-  | IEntry[];
+  | IEntry[]
+  | IEntry;
 
 export default function handler(
   req: NextApiRequest,
@@ -14,6 +15,9 @@ export default function handler(
   switch (req.method) {
     case "GET":
       return getEntries(res);
+
+    case "POST":
+      return postEntry(req, res);
 
     default:
       return res
@@ -30,3 +34,28 @@ const getEntries = async (res: NextApiResponse<Data>) => {
 
   return res.status(StatusCodes.OK).json(entries);
 };
+
+const postEntry = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
+  const { description = '' } = req.body;
+
+  const newEntry = new Entry({
+    description,
+    createdAt: Date.now(),
+  });
+
+  try {
+    await dataBase.connect();
+    await newEntry.save();
+    await dataBase.disconnect();
+
+  return res.status(StatusCodes.CREATED).json(newEntry);
+  } catch (error) {
+    await dataBase.disconnect();
+    console.log('====================================');
+    console.log(error);
+    console.log('====================================');
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'Algo salío mal'
+    });
+  }
+}

@@ -3,6 +3,7 @@ import { EntriesContext, entriesReducer } from "./";
 import { Entry } from "../../interfaces/Entry";
 import { v4 as uuidv4 } from "uuid";
 import { entriesApi } from "@/api";
+import { useSnackbar } from "notistack";
 
 export interface entriesState {
   entries: Entry[];
@@ -35,20 +36,46 @@ const UI_INITIAL_STATE: entriesState = {
 
 export const EntriesProvider: FC<PropsWithChildren> = ({ children }) => {
   const [state, dispatch] = useReducer(entriesReducer, UI_INITIAL_STATE);
+  const { enqueueSnackbar } = useSnackbar();
+  const addNewEntry = async (description: string) => {
+    const { data } = await entriesApi.post<Entry>("/entries", { description });
 
-  const addNewEntry = (description: string) => {
-    const newEntry: Entry = {
-      _id: uuidv4(),
-      description:
-        "Pendiente: Et commodo fugiat aliqua labore adipisicing consequat voluptate fugiat.",
-      createdAt: Date.now(),
-      status: "pending",
-    };
-    dispatch({ type: "[Entry] Add-Entry", payload: newEntry });
+    // const newEntry: Entry = {
+    //   _id: uuidv4(),
+    //   description:
+    //     "Pendiente: Et commodo fugiat aliqua labore adipisicing consequat voluptate fugiat.",
+    //   createdAt: Date.now(),
+    //   status: "pending",
+    // };
+    dispatch({ type: "[Entry] Add-Entry", payload: data });
   };
 
-  const updateEntry = (entry: Entry) => {
-    dispatch({ type: "[Entry] Entry-Updated", payload: entry });
+  const updateEntry = async (
+    { _id, description, status }: Entry,
+    showSnackbar = false
+  ) => {
+    try {
+      const createdAt = new Date();
+      const { data } = await entriesApi.put<Entry>(`/entries/${_id}`, {
+        description,
+        status,
+        createdAt,
+      });
+      dispatch({ type: "[Entry] Entry-Updated", payload: data });
+
+      if (showSnackbar) {
+        enqueueSnackbar("Entrada Actualizada", {
+          variant: "success",
+          autoHideDuration: 1500,
+          anchorOrigin: {
+            vertical: "top",
+            horizontal: "right",
+          },
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const refreshEntries = async () => {

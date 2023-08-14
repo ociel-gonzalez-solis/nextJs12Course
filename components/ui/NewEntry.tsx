@@ -7,7 +7,7 @@ import { UIContext } from "@/context/ui";
 
 export const NewEntry = () => {
   const [inputValue, setInputValue] = useState("");
-  const [isTouch, setIsTouch] = useState(false);
+  const [isTouch, setIsTouch]       = useState(false);
 
   const { addNewEntry } = useContext(EntriesContext);
   const { isAddingEntry, setIsAddingEntry } = useContext(UIContext);

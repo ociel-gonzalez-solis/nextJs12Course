@@ -6,6 +6,7 @@ import { EntriesContext } from "@/context/entries";
 import { UIContext } from "@/context/ui";
 
 import styles from "./EntriesList.module.css";
+import { useRouter } from "next/router";
 
 interface Props {
   status: EntryStatus;
